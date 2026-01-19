@@ -1,0 +1,77 @@
+Create a new React project called AricaToucan-Frontend using the React.js template (or create-react-app structure).
+
+Project name / branding: "Arica Toucan - ISO 27001/27002 Compliance SaaS"
+
+Structure the application with:
+
+1. Routing: Use react-router-dom. Create these routes/pages:
+   - /login          → Login page
+   - /questionnaire/user     → Employee/organization questionnaire
+   - /questionnaire/provider → Provider (internal team) questionnaire
+   - /report-preview         → User-facing report preview
+   - /admin/dashboard        → Admin dashboard for viewing all organizations
+
+2. Navigation: Create a responsive Navbar using react-bootstrap with brand "Arica Toucan" and the following links:
+   - Login
+   - User Questionnaire
+   - Provider Questionnaire
+   - Report Preview
+   - Admin Dashboard
+
+3. Styling: Install and use bootstrap + react-bootstrap. Make sure the layout is clean and responsive.
+
+4. Page contents (minimum viable implementation):
+
+   Login.js
+   - Simple centered form: email + password + "Login" button
+   - Header: "Welcome to Arica Toucan"
+
+   UserQuestionnaire.js
+   - Title: "Organization Employee Questionnaire"
+   - Render 6–8 sample questions as radio buttons / select (Yes/No/Partial/Not Applicable)
+   - Example questions:
+     1. Does the organization have a documented information security policy? (ISO 27001 Clause 5.2)
+     2. Is access to sensitive information restricted based on business needs? (ISO 27002 5.15)
+     3. Are all critical systems protected with up-to-date antivirus/malware protection?
+     4. Is data encryption used for data at rest and in transit?
+     5. Is there a formal incident response plan?
+   - Submit button (for now just console.log the answers)
+
+   ProviderQuestionnaire.js
+   - Title: "Service Provider / Internal Review Questionnaire"
+   - 4–6 questions focused on provider side, e.g.:
+     1. Have we completed the automated system scan review?
+     2. Have AI-generated gap recommendations been reviewed?
+     3. Are remediation timelines agreed with the client?
+
+   ReportPreview.js
+   - Mock report layout using Cards
+   - Include:
+     - Big number: "Compliance Score: 78%"
+     - Simple pie chart using react-chartjs-2 (install chart.js + react-chartjs-2)
+     - Sections: Strengths, Gaps Identified, Recommended Remedies, Estimated Steps to Compliance
+
+   AdminDashboard.js
+   - Title: "Arica Toucan Admin – All Organizations"
+   - Responsive Table (react-bootstrap Table) with columns:
+     - Organization Name
+     - Compliance Score
+     - Last Scan Date
+     - Status
+     - Actions (View Details button)
+   - Use mock data (array of 4–6 organizations), example:
+     [
+       { name: "TechNova Solutions", score: 84, date: "2026-01-15", status: "Partial" },
+       { name: "FinSecure Pvt Ltd", score: 62, date: "2026-01-10", status: "Critical Gaps" },
+       ...
+     ]
+
+5. Add a simple Footer component on all pages: "© 2026 Arica Toucan – Helping organizations achieve & maintain ISO 27001/27002 compliance"
+
+6. GitHub:
+   - Connect this Repl to GitHub
+   - Target repository: https://github.com/prathamesh-ops-sudo/Arica-Compliance-v2
+   - Initial commit message: "Initial frontend prototype – React app structure with admin dashboard, questionnaires and report preview (Step 1 Phase 1)"
+   - Push to main branch
+
+After creation, run the app and confirm it works in the preview window without major errors.
