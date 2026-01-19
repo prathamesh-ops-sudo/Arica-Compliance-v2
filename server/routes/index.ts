@@ -4,6 +4,8 @@ import { questionnaireRoutes } from './questionnaireRoutes';
 import { reportRoutes } from './reportRoutes';
 import { organizationRoutes } from './organizationRoutes';
 import { analyzeRoutes } from './analyzeRoutes';
+import pdfRoutes from './pdfRoutes';
+import billingRoutes from './billingRoutes';
 
 export function registerApiRoutes(app: Express) {
   app.use('/api/admin', adminRoutes);
@@ -11,6 +13,8 @@ export function registerApiRoutes(app: Express) {
   app.use('/api/report', reportRoutes);
   app.use('/api/organizations', organizationRoutes);
   app.use('/api/analyze', analyzeRoutes);
+  app.use('/api/report/pdf', pdfRoutes);
+  app.use('/api/billing', billingRoutes);
 }
 
-export { adminRoutes, questionnaireRoutes, reportRoutes, organizationRoutes, analyzeRoutes };
+export { adminRoutes, questionnaireRoutes, reportRoutes, organizationRoutes, analyzeRoutes, pdfRoutes, billingRoutes };

@@ -2,6 +2,11 @@ import * as cdk from 'aws-cdk-lib';
 import * as apprunner from '@aws-cdk/aws-apprunner-alpha';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
+import * as sns from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 
 export interface AricaToucanStackProps extends cdk.StackProps {
@@ -51,6 +56,85 @@ export class AricaToucanStack extends cdk.Stack {
       resources: ['arn:aws:bedrock:*::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0'],
     }));
 
+    // Cognito User Pool for authentication
+    const userPool = new cognito.UserPool(this, 'AricaToucanUserPool', {
+      userPoolName: 'arica-toucan-users',
+      selfSignUpEnabled: true,
+      signInAliases: {
+        email: true,
+      },
+      autoVerify: {
+        email: true,
+      },
+      standardAttributes: {
+        email: {
+          required: true,
+          mutable: true,
+        },
+        fullname: {
+          required: false,
+          mutable: true,
+        },
+      },
+      customAttributes: {
+        organizationId: new cognito.StringAttribute({ mutable: true }),
+        role: new cognito.StringAttribute({ mutable: true }),
+      },
+      passwordPolicy: {
+        minLength: 8,
+        requireLowercase: true,
+        requireUppercase: true,
+        requireDigits: true,
+        requireSymbols: false,
+      },
+      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // Cognito User Pool Client for frontend
+    const userPoolClient = new cognito.UserPoolClient(this, 'AricaToucanUserPoolClient', {
+      userPool,
+      userPoolClientName: 'arica-toucan-web-client',
+      authFlows: {
+        userPassword: true,
+        userSrp: true,
+      },
+      preventUserExistenceErrors: true,
+      generateSecret: false,
+    });
+
+    // S3 Bucket for PDF reports
+    const reportsBucket = new s3.Bucket(this, 'AricaToucanReportsBucket', {
+      bucketName: `arica-toucan-reports-${this.account}-${this.region}`,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      lifecycleRules: [
+        {
+          expiration: cdk.Duration.days(90),
+          prefix: 'reports/',
+        },
+      ],
+      cors: [
+        {
+          allowedMethods: [s3.HttpMethods.GET],
+          allowedOrigins: ['*'],
+          allowedHeaders: ['*'],
+          maxAge: 3000,
+        },
+      ],
+    });
+
+    // Grant S3 read/write permissions to App Runner instance role
+    reportsBucket.grantReadWrite(appRunnerInstanceRole);
+
+    // SNS Topic for CloudWatch Alarms
+    const alarmTopic = new sns.Topic(this, 'AricaToucanAlarmTopic', {
+      topicName: 'arica-toucan-alarms',
+      displayName: 'Arica Toucan Monitoring Alarms',
+    });
+
     // Backend App Runner Service
     const backendService = new apprunner.Service(this, 'AricaToucanBackend', {
       serviceName: 'arica-toucan-backend',
@@ -66,6 +150,9 @@ export class AricaToucanStack extends cdk.Stack {
           environmentVariables: {
             DYNAMODB_TABLE_NAME: organizationsTable.tableName,
             AWS_REGION: this.region,
+            COGNITO_USER_POOL_ID: userPool.userPoolId,
+            COGNITO_CLIENT_ID: userPoolClient.userPoolClientId,
+            S3_REPORTS_BUCKET: reportsBucket.bucketName,
           },
         },
         connection: apprunner.GitHubConnection.fromConnectionArn(githubConnectionArn),
@@ -141,6 +228,30 @@ export class AricaToucanStack extends cdk.Stack {
       value: organizationsTable.tableArn,
       description: 'DynamoDB Organizations Table ARN',
       exportName: 'AricaToucanDynamoDBTableArn',
+    });
+
+    new cdk.CfnOutput(this, 'CognitoUserPoolId', {
+      value: userPool.userPoolId,
+      description: 'Cognito User Pool ID',
+      exportName: 'AricaToucanCognitoUserPoolId',
+    });
+
+    new cdk.CfnOutput(this, 'CognitoClientId', {
+      value: userPoolClient.userPoolClientId,
+      description: 'Cognito User Pool Client ID',
+      exportName: 'AricaToucanCognitoClientId',
+    });
+
+    new cdk.CfnOutput(this, 'S3ReportsBucket', {
+      value: reportsBucket.bucketName,
+      description: 'S3 Bucket for PDF Reports',
+      exportName: 'AricaToucanS3ReportsBucket',
+    });
+
+    new cdk.CfnOutput(this, 'AlarmTopicArn', {
+      value: alarmTopic.topicArn,
+      description: 'SNS Topic ARN for CloudWatch Alarms',
+      exportName: 'AricaToucanAlarmTopicArn',
     });
 
     // Tags for all resources
