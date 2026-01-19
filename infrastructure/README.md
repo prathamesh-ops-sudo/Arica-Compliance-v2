@@ -170,7 +170,7 @@ Set in `cdk.json` or via `-c` flag:
 
 ## Bedrock AI Analysis Setup
 
-The application uses AWS Bedrock with Claude 3 Haiku for AI-powered compliance analysis.
+The application uses AWS Bedrock with Claude 3 Sonnet for AI-powered compliance analysis.
 
 ### Enabling Bedrock Model Access
 
@@ -178,7 +178,7 @@ As of late 2024, serverless foundation models are automatically enabled when fir
 
 1. Go to AWS Console > Amazon Bedrock > Model access
 2. Click "Manage model access"
-3. Find "Anthropic - Claude 3 Haiku" and click "Request access"
+3. Find "Anthropic - Claude 3 Sonnet" and click "Request access"
 4. Submit the required use case details
 5. Wait for approval (usually instant for most accounts)
 
@@ -195,7 +195,7 @@ After deployment, test the AI Analysis feature:
 If AI Analysis fails with "Access Denied":
 - Verify model access is granted in Bedrock console
 - Check the App Runner instance role has `bedrock:InvokeModel` permission
-- Ensure the model ID matches: `anthropic.claude-3-haiku-20240307-v1:0`
+- Ensure the model ID matches: `anthropic.claude-3-sonnet-20240229-v1:0`
 
 ## IAM Least Privilege Recommendations
 
@@ -228,7 +228,7 @@ Instead of broad permissions, use these specific policies:
       "Action": [
         "bedrock:InvokeModel"
       ],
-      "Resource": "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+      "Resource": "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0"
     }
   ]
 }

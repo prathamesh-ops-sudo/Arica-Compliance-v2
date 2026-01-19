@@ -125,7 +125,7 @@ jobs:
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### ⚠️ Post-Deployment Checklist" >> $GITHUB_STEP_SUMMARY
-          echo "- [ ] Verify Bedrock model access (Claude 3 Haiku) is enabled in AWS Console" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Verify Bedrock model access (Claude 3 Sonnet) is enabled in AWS Console" >> $GITHUB_STEP_SUMMARY
           echo "- [ ] Test AI Analysis button in Admin Dashboard" >> $GITHUB_STEP_SUMMARY
           echo "- [ ] Verify DynamoDB table has seeded data" >> $GITHUB_STEP_SUMMARY
 
@@ -138,4 +138,4 @@ jobs:
           echo "1. **Missing Secrets**: Ensure AWS_ROLE_ARN, AWS_ACCOUNT_ID, and GITHUB_CONNECTION_ARN are set" >> $GITHUB_STEP_SUMMARY
           echo "2. **IAM Permissions**: The OIDC role needs CDK, CloudFormation, App Runner, DynamoDB, and IAM permissions" >> $GITHUB_STEP_SUMMARY
           echo "3. **GitHub Connection**: Verify the App Runner GitHub connection is in 'Available' status" >> $GITHUB_STEP_SUMMARY
-          echo "4. **Bedrock Access**: Request access to Claude 3 Haiku model in AWS Bedrock console" >> $GITHUB_STEP_SUMMARY
+          echo "4. **Bedrock Access**: Request access to Claude 3 Sonnet model in AWS Bedrock console" >> $GITHUB_STEP_SUMMARY

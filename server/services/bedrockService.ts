@@ -3,7 +3,7 @@ import { storage } from '../db';
 import type { DynamoDBOrganization } from '../db';
 
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
-const MODEL_ID = 'anthropic.claude-3-haiku-20240307-v1:0';
+const MODEL_ID = 'anthropic.claude-3-sonnet-20240229-v1:0';
 
 const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
 
@@ -20,7 +20,7 @@ function createFallbackAnalysis(org: OrganizationWithAnalysis, errorMessage: str
     remedies: [
       {
         action: 'Enable Bedrock Model Access',
-        timeline: 'Immediate - Go to AWS Bedrock console and request access to Claude 3 Haiku model',
+        timeline: 'Immediate - Go to AWS Bedrock console and request access to Claude 3 Sonnet model',
       },
       {
         action: 'Retry Analysis',
@@ -29,7 +29,7 @@ function createFallbackAnalysis(org: OrganizationWithAnalysis, errorMessage: str
     ],
     stepByStepPlan: [
       'Go to AWS Console > Amazon Bedrock > Model access',
-      'Request access to Anthropic Claude 3 Haiku model',
+      'Request access to Anthropic Claude 3 Sonnet model',
       'Wait for access approval (usually instant for most models)',
       'Return to this dashboard and click "AI Analysis" again',
     ],
