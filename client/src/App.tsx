@@ -7,6 +7,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
@@ -73,6 +74,7 @@ function App() {
               <Footer />
             </div>
             <Toaster />
+            <WelcomeModal />
           </TooltipProvider>
         </ThemeProvider>
       </AuthProvider>

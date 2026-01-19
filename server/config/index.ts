@@ -12,4 +12,5 @@ export const config = {
   s3ReportsBucket: process.env.S3_REPORTS_BUCKET || '',
   cognitoUserPoolId: process.env.COGNITO_USER_POOL_ID || '',
   cognitoClientId: process.env.COGNITO_CLIENT_ID || '',
+  dynamodbAnalyticsTable: process.env.DYNAMODB_ANALYTICS_TABLE || 'AricaAnalytics',
 };
