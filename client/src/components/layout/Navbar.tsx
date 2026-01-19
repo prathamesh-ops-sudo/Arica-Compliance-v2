@@ -1,8 +1,9 @@
 import { Link, useLocation } from "wouter";
-import { Shield, Menu, X, LogIn, ClipboardList, FileCheck, BarChart3, LayoutDashboard } from "lucide-react";
+import { Shield, Menu, X, LogIn, ClipboardList, FileCheck, BarChart3, LayoutDashboard, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "./ThemeProvider";
 
 const navLinks = [
   { href: "/login", label: "Login", icon: LogIn },
@@ -15,6 +16,7 @@ const navLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [location] = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
@@ -28,7 +30,7 @@ export function Navbar() {
             </div>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-2">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = location === link.href;
@@ -49,17 +51,48 @@ export function Navbar() {
                 </Link>
               );
             })}
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label="Toggle dark mode"
+              data-testid="button-theme-toggle"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </Button>
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setIsOpen(!isOpen)}
-            data-testid="button-mobile-menu"
-          >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label="Toggle dark mode"
+              className="mr-1"
+              data-testid="button-theme-toggle-mobile"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setIsOpen(!isOpen)}
+              data-testid="button-mobile-menu"
+            >
+              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
 
         {isOpen && (
