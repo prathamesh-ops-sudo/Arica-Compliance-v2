@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Shield, Mail, Lock, ArrowRight } from "lucide-react";
+import { Shield, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -8,10 +9,13 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { loginSchema, type LoginInput } from "@shared/schema";
 import { useLocation } from "wouter";
+import { useAuth } from "@/lib/auth";
 
 export default function Login() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { login } = useAuth();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -21,14 +25,26 @@ export default function Login() {
     },
   });
 
-  function onSubmit(data: LoginInput) {
-    toast({
-      title: "Login Successful",
-      description: `Welcome back! Redirecting to dashboard...`,
-    });
-    setTimeout(() => {
-      setLocation("/admin/dashboard");
-    }, 1500);
+  async function onSubmit(data: LoginInput) {
+    setIsLoggingIn(true);
+    try {
+      await login(data.email, data.password);
+      toast({
+        title: "Login Successful",
+        description: "Welcome back! Redirecting to dashboard...",
+      });
+      setTimeout(() => {
+        setLocation("/admin/dashboard");
+      }, 1000);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Login failed";
+      toast({
+        title: "Login Failed",
+        description: message,
+        variant: "destructive",
+      });
+      setIsLoggingIn(false);
+    }
   }
 
   return (
@@ -103,11 +119,20 @@ export default function Login() {
                 <Button
                   type="submit"
                   className="w-full gap-2"
-                  disabled={form.formState.isSubmitting}
+                  disabled={isLoggingIn}
                   data-testid="button-login"
                 >
-                  {form.formState.isSubmitting ? "Signing in..." : "Sign In"}
-                  <ArrowRight className="h-4 w-4" />
+                  {isLoggingIn ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    <>
+                      Sign In
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
                 </Button>
               </form>
             </Form>
