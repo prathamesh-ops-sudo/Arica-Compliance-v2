@@ -7,6 +7,7 @@ import { analyzeRoutes } from './analyzeRoutes';
 import pdfRoutes from './pdfRoutes';
 import billingRoutes from './billingRoutes';
 import { analyticsRoutes } from './analyticsRoutes';
+import { seedRoutes } from './seedRoutes';
 
 export function registerApiRoutes(app: Express) {
   app.use('/api/admin', adminRoutes);
@@ -17,6 +18,7 @@ export function registerApiRoutes(app: Express) {
   app.use('/api/report/pdf', pdfRoutes);
   app.use('/api/billing', billingRoutes);
   app.use('/api/analytics', analyticsRoutes);
+  app.use('/api/seed', seedRoutes);
 }
 
-export { adminRoutes, questionnaireRoutes, reportRoutes, organizationRoutes, analyzeRoutes, pdfRoutes, billingRoutes, analyticsRoutes };
+export { adminRoutes, questionnaireRoutes, reportRoutes, organizationRoutes, analyzeRoutes, pdfRoutes, billingRoutes, analyticsRoutes, seedRoutes };
