@@ -1,0 +1,23 @@
+"Create a new React project called AricaToucan-Frontend using create-react-app or equivalent setup. Structure the app with the following components and pages for an ISO Compliance SaaS product named 'Arica Toucan':
+
+App.js: Set up routing with react-router-dom (install if needed). Include a navigation bar using react-bootstrap/Navbar with links to: Home/Login, User Questionnaire, Provider Questionnaire, User Report Preview, and Admin Dashboard. Brand the navbar with 'Arica Toucan - ISO 27001/27002 Compliance Checker'.
+Pages:
+Login.js: A simple form with email/password fields and a submit button. Use react-bootstrap/Form for styling. Add a welcome message: 'Login to Arica Toucan to start your ISO compliance journey.'
+UserQuestionnaire.js: Dynamic form for organization employees. Use react-bootstrap components. Render a list of sample questions as radio/checkbox inputs, e.g.:
+'Does your organization have an information security policy? (Yes/No)' (tied to ISO 27001 Clause 5).
+'Are access controls in place for sensitive data? (Yes/No/Partial)' (tied to ISO 27002 Control 5.15).
+Make it dynamic: Use an array of questions in state, map to Form.Group elements. Include a submit button.
+
+ProviderQuestionnaire.js: Similar to UserQuestionnaire but for service providers (us). Sample questions:
+'Have we reviewed the org's scan results? (Yes/No)'
+'Are mitigations recommended based on AI analysis? (Yes/No)'
+Submit button to simulate sending to server.
+
+UserReportPreview.js: A preview page showing a mock compliance report. Use react-bootstrap/Card and Chart.js (install react-chartjs-2 chart.js) for a sample pie chart (e.g., Compliance Score: 75% Green, 25% Red for Gaps). Include sections: 'Your ISO Compliance Status', 'Remedies and Mitigations', 'Step-by-Step Guide to Compliance'.
+AdminDashboard.js: A provider-facing dashboard to view all scanned organizations. Use react-bootstrap/Table for a responsive table with columns: Org Name, Compliance Score (%), Last Scan Date, View Details (button). Populate with mock data array, e.g., [{orgName: 'TestCorp', score: 85, lastScan: '2026-01-18', id: '001'}, {orgName: 'DemoOrg', score: 62, lastScan: '2026-01-15', id: '002'}]. Add a header: 'Arica Toucan Admin: Overview of Scanned Organizations'. Include buttons to fetch real data later (stub with console.log).
+
+Styling: Install and import Bootstrap (bootstrap and react-bootstrap). Apply classes like container-fluid, row, col for layout.
+Additional: Add a footer component with '© 2026 Arica Toucan - Built for ISO Compliance' on all pages. Ensure the app is responsive for mobile/desktop.
+GitHub Integration: After setup, commit all changes with message 'Initial frontend setup for Arica Toucan with admin dashboard and questionnaire stubs'. Push to a new GitHub repo: https://github.com/yourusername/AricaToucan (replace 'yourusername' with actual). If repo doesn't exist, create it via Replit's Git tools.
+
+Run the app and ensure no errors. Provide any generated code or logs if possible."
