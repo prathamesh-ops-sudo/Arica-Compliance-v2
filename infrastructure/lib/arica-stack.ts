@@ -135,6 +135,28 @@ export class AricaToucanStack extends cdk.Stack {
       displayName: 'Arica Toucan Monitoring Alarms',
     });
 
+    // CloudWatch Alarm for Backend Error Rate > 5%
+    const backendErrorRateAlarm = new cloudwatch.Alarm(this, 'BackendErrorRateAlarm', {
+      alarmName: 'arica-toucan-backend-error-rate',
+      alarmDescription: 'Alarm when backend error rate exceeds 5%',
+      metric: new cloudwatch.Metric({
+        namespace: 'AWS/AppRunner',
+        metricName: '5xxStatusResponses',
+        dimensionsMap: {
+          ServiceName: 'arica-toucan-backend',
+        },
+        statistic: 'Sum',
+        period: cdk.Duration.minutes(5),
+      }),
+      threshold: 5,
+      evaluationPeriods: 2,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    });
+
+    // Add SNS notification action to the alarm
+    backendErrorRateAlarm.addAlarmAction(new cloudwatchActions.SnsAction(alarmTopic));
+
     // Backend App Runner Service
     const backendService = new apprunner.Service(this, 'AricaToucanBackend', {
       serviceName: 'arica-toucan-backend',

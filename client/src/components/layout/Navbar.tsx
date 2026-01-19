@@ -1,12 +1,24 @@
 import { Link, useLocation } from "wouter";
-import { Shield, Menu, X, LogIn, ClipboardList, FileCheck, BarChart3, LayoutDashboard, Sun, Moon } from "lucide-react";
+import { Shield, Menu, X, LogIn, ClipboardList, FileCheck, BarChart3, LayoutDashboard, Sun, Moon, LogOut, User, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "./ThemeProvider";
+import { useAuth } from "@/lib/auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const navLinks = [
-  { href: "/login", label: "Login", icon: LogIn },
+const publicLinks = [
+  { href: "/pricing", label: "Pricing", icon: CreditCard },
+];
+
+const authLinks = [
   { href: "/questionnaire/user", label: "User Questionnaire", icon: ClipboardList },
   { href: "/questionnaire/provider", label: "Provider Questionnaire", icon: FileCheck },
   { href: "/report-preview", label: "Report Preview", icon: BarChart3 },
@@ -15,8 +27,16 @@ const navLinks = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const navLinks = isAuthenticated ? [...publicLinks, ...authLinks] : publicLinks;
+
+  const handleLogout = () => {
+    logout();
+    setLocation('/');
+  };
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
@@ -65,6 +85,39 @@ export function Navbar() {
                 <Moon className="h-5 w-5" />
               )}
             </Button>
+
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <User className="h-4 w-4" />
+                    <span className="hidden xl:inline max-w-[120px] truncate">
+                      {user?.name || user?.email?.split('@')[0] || 'User'}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{user?.name || 'User'}</span>
+                      <span className="text-xs text-muted-foreground">{user?.email}</span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/login">
+                <Button variant="default" size="sm" className="gap-2">
+                  <LogIn className="h-4 w-4" />
+                  <span className="hidden xl:inline">Sign In</span>
+                </Button>
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center gap-1">
@@ -117,6 +170,32 @@ export function Navbar() {
                   </Link>
                 );
               })}
+              
+              {isAuthenticated ? (
+                <>
+                  <div className="px-3 py-2 text-sm text-muted-foreground border-t mt-2 pt-2">
+                    Signed in as {user?.email}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 text-red-600"
+                    onClick={() => {
+                      handleLogout();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Link href="/login" onClick={() => setIsOpen(false)}>
+                  <Button variant="default" className="w-full justify-start gap-3 mt-2">
+                    <LogIn className="h-4 w-4" />
+                    Sign In
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         )}
