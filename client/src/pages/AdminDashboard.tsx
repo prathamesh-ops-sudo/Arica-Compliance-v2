@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LayoutDashboard, Search, Eye, Building2, TrendingUp, AlertTriangle, CheckCircle2, RefreshCw, Brain, Loader2, X } from "lucide-react";
+import { LayoutDashboard, Search, Eye, Building2, TrendingUp, AlertTriangle, CheckCircle2, RefreshCw, Brain, Loader2, X, FileDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +55,40 @@ export default function AdminDashboard() {
     onSuccess: (data) => {
       setAnalysisResult(data.data);
       queryClient.invalidateQueries({ queryKey: ["/api/organizations"] });
+    },
+  });
+
+  const pdfMutation = useMutation({
+    mutationFn: async (orgId: string) => {
+      const response = await fetch(`/api/report/pdf/${orgId}`);
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to generate PDF');
+        }
+        throw new Error('Failed to generate PDF report');
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (contentType?.includes('application/pdf')) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `compliance-report-${orgId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        return { success: true, direct: true };
+      }
+      
+      const data = await response.json();
+      if (data.downloadUrl) {
+        window.open(data.downloadUrl, '_blank');
+      }
+      return data;
     },
   });
 
@@ -247,6 +281,21 @@ export default function AdminDashboard() {
                                 AI Analysis
                               </Button>
                               <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1.5 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 transition-colors"
+                                onClick={() => pdfMutation.mutate(org.id)}
+                                disabled={pdfMutation.isPending}
+                                data-testid={`button-pdf-${org.id}`}
+                              >
+                                {pdfMutation.isPending ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <FileDown className="h-4 w-4" />
+                                )}
+                                PDF
+                              </Button>
+                              <Button
                                 variant="ghost"
                                 size="sm"
                                 className="gap-1.5"
@@ -396,6 +445,21 @@ export default function AdminDashboard() {
           ) : null}
 
           <div className="flex justify-end gap-2 pt-4 border-t">
+            {selectedOrg && analysisResult && (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() => pdfMutation.mutate(selectedOrg.id)}
+                disabled={pdfMutation.isPending}
+              >
+                {pdfMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileDown className="h-4 w-4" />
+                )}
+                Download PDF Report
+              </Button>
+            )}
             <Button variant="outline" onClick={closeAnalysisModal}>
               Close
             </Button>

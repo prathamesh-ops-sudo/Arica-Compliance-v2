@@ -13,6 +13,7 @@ import UserQuestionnaire from "@/pages/UserQuestionnaire";
 import ProviderQuestionnaire from "@/pages/ProviderQuestionnaire";
 import ReportPreview from "@/pages/ReportPreview";
 import AdminDashboard from "@/pages/AdminDashboard";
+import Pricing from "@/pages/Pricing";
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/questionnaire/provider" component={ProviderQuestionnaire} />
       <Route path="/report-preview" component={ReportPreview} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route path="/pricing" component={Pricing} />
       <Route component={NotFound} />
     </Switch>
   );
