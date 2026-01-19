@@ -5,10 +5,20 @@ export const analyzeController = {
   async analyzeOrganization(req: Request, res: Response): Promise<void> {
     try {
       const orgId = req.params.orgId as string;
+      const forceRefresh = req.query.refresh === 'true';
       
       if (!orgId) {
         res.status(400).json({ error: true, message: 'Organization ID is required' });
         return;
+      }
+
+      if (!forceRefresh) {
+        const cachedResult = await bedrockService.getAnalysisResult(orgId);
+        if (cachedResult) {
+          console.log(`Returning cached analysis for org ${orgId}`);
+          res.json({ success: true, data: cachedResult, cached: true });
+          return;
+        }
       }
 
       const result = await bedrockService.analyzeOrganization(orgId);
@@ -18,7 +28,7 @@ export const analyzeController = {
         return;
       }
 
-      res.json({ success: true, data: result });
+      res.json({ success: true, data: result, cached: false });
     } catch (error) {
       console.error('Error analyzing organization:', error);
       const message = error instanceof Error ? error.message : 'Failed to analyze organization';

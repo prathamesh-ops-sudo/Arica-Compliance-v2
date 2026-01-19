@@ -69,6 +69,7 @@ export default function AdminDashboard() {
     setIsAnalysisModalOpen(false);
     setSelectedOrg(null);
     setAnalysisResult(null);
+    refetch();
   };
 
   const filteredOrgs = organizations?.filter((org) =>

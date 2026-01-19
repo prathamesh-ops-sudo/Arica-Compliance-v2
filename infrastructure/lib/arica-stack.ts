@@ -137,6 +137,12 @@ export class AricaToucanStack extends cdk.Stack {
       exportName: 'AricaToucanDynamoDBTable',
     });
 
+    new cdk.CfnOutput(this, 'DynamoDBTableArn', {
+      value: organizationsTable.tableArn,
+      description: 'DynamoDB Organizations Table ARN',
+      exportName: 'AricaToucanDynamoDBTableArn',
+    });
+
     // Tags for all resources
     cdk.Tags.of(this).add('Project', 'AricaToucan');
     cdk.Tags.of(this).add('Environment', 'Development');

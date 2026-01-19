@@ -168,10 +168,85 @@ Set in `cdk.json` or via `-c` flag:
 | `CDK_DEFAULT_ACCOUNT` | AWS account ID (auto-detected if AWS CLI configured) |
 | `CDK_DEFAULT_REGION` | AWS region (defaults to us-east-1) |
 
+## Bedrock AI Analysis Setup
+
+The application uses AWS Bedrock with Claude 3 Haiku for AI-powered compliance analysis.
+
+### Enabling Bedrock Model Access
+
+As of late 2024, serverless foundation models are automatically enabled when first invoked. However, for Anthropic models (Claude), first-time users must submit use case details:
+
+1. Go to AWS Console > Amazon Bedrock > Model access
+2. Click "Manage model access"
+3. Find "Anthropic - Claude 3 Haiku" and click "Request access"
+4. Submit the required use case details
+5. Wait for approval (usually instant for most accounts)
+
+### Testing Bedrock Integration
+
+After deployment, test the AI Analysis feature:
+1. Open the frontend URL
+2. Go to Admin Dashboard
+3. Click "AI Analysis" on any organization
+4. If Bedrock access is not configured, you'll see a helpful fallback message with setup instructions
+
+### Troubleshooting Bedrock Errors
+
+If AI Analysis fails with "Access Denied":
+- Verify model access is granted in Bedrock console
+- Check the App Runner instance role has `bedrock:InvokeModel` permission
+- Ensure the model ID matches: `anthropic.claude-3-haiku-20240307-v1:0`
+
+## IAM Least Privilege Recommendations
+
+For production deployments, scope down the IAM role permissions:
+
+### App Runner Instance Role (Runtime)
+
+Instead of broad permissions, use these specific policies:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DynamoDBAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Scan",
+        "dynamodb:Query"
+      ],
+      "Resource": "arn:aws:dynamodb:us-east-1:ACCOUNT_ID:table/AricaOrganizations"
+    },
+    {
+      "Sid": "BedrockAccess",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel"
+      ],
+      "Resource": "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+    }
+  ]
+}
+```
+
+### GitHub Actions OIDC Role
+
+For the CDK deployment role, use these minimum permissions:
+- CloudFormation: Full access to manage stacks
+- App Runner: Full access to manage services
+- DynamoDB: Full access to manage tables
+- IAM: PassRole and CreateRole for App Runner roles
+- S3: Access to CDK bootstrap bucket
+
 ## Future Enhancements
 
-- [ ] Add DynamoDB tables for persistent storage
-- [ ] Add AWS Bedrock integration for AI features
+- [x] Add DynamoDB tables for persistent storage
+- [x] Add AWS Bedrock integration for AI features
 - [ ] Add custom domain with Route 53
 - [ ] Add CloudWatch alarms and dashboards
 - [ ] Add WAF for security

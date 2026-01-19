@@ -64,19 +64,78 @@ jobs:
             || echo "Bootstrap already done or skipped"
 
       - name: CDK Deploy
+        id: cdk-deploy
         working-directory: infrastructure
         run: |
+          set -o pipefail
           cdk deploy --all \
             --require-approval never \
-            -c githubConnectionArn=${{ secrets.GITHUB_CONNECTION_ARN }}
+            --outputs-file cdk-outputs.json \
+            -c githubConnectionArn=${{ secrets.GITHUB_CONNECTION_ARN }} 2>&1 | tee deploy.log
+          
+          # Check for common errors
+          if grep -q "AccessDenied" deploy.log; then
+            echo "::error::AWS Access Denied - Check IAM role permissions"
+            exit 1
+          fi
+          if grep -q "ResourceNotFoundException" deploy.log; then
+            echo "::error::Resource not found - Check GitHub connection ARN"
+            exit 1
+          fi
 
-      - name: Output Stack URLs
+      - name: Output Stack URLs and Resources
+        if: always()
         working-directory: infrastructure
         run: |
-          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Arica Toucan Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Stack outputs:" >> $GITHUB_STEP_SUMMARY
-          aws cloudformation describe-stacks \
-            --stack-name AricaToucanStack \
-            --query 'Stacks[0].Outputs' \
-            --output table >> $GITHUB_STEP_SUMMARY || echo "Could not fetch stack outputs"
+          echo "**Deployment Time:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Try to get outputs from CDK outputs file first
+          if [ -f cdk-outputs.json ]; then
+            echo "### 📦 Stack Outputs" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            BACKEND_URL=$(jq -r '.AricaToucanStack.BackendServiceUrl // empty' cdk-outputs.json)
+            FRONTEND_URL=$(jq -r '.AricaToucanStack.FrontendServiceUrl // empty' cdk-outputs.json)
+            DYNAMODB_TABLE=$(jq -r '.AricaToucanStack.DynamoDBTableName // empty' cdk-outputs.json)
+            DYNAMODB_ARN=$(jq -r '.AricaToucanStack.DynamoDBTableArn // empty' cdk-outputs.json)
+            
+            if [ -n "$FRONTEND_URL" ]; then
+              echo "| Resource | Value |" >> $GITHUB_STEP_SUMMARY
+              echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+              echo "| **Frontend URL** | $FRONTEND_URL |" >> $GITHUB_STEP_SUMMARY
+              echo "| **Backend URL** | $BACKEND_URL |" >> $GITHUB_STEP_SUMMARY
+              echo "| **DynamoDB Table** | $DYNAMODB_TABLE |" >> $GITHUB_STEP_SUMMARY
+              echo "| **DynamoDB ARN** | $DYNAMODB_ARN |" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### 🔗 Quick Links" >> $GITHUB_STEP_SUMMARY
+              echo "- [Open Frontend]($FRONTEND_URL)" >> $GITHUB_STEP_SUMMARY
+              echo "- [Test Backend API]($BACKEND_URL/api/admin/organizations)" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "### Stack Outputs (from CloudFormation)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            aws cloudformation describe-stacks \
+              --stack-name AricaToucanStack \
+              --query 'Stacks[0].Outputs' \
+              --output table >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "Could not fetch stack outputs" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ⚠️ Post-Deployment Checklist" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Verify Bedrock model access (Claude 3 Haiku) is enabled in AWS Console" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Test AI Analysis button in Admin Dashboard" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Verify DynamoDB table has seeded data" >> $GITHUB_STEP_SUMMARY
+
+      - name: Handle Deployment Failure
+        if: failure()
+        run: |
+          echo "## ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Common Issues" >> $GITHUB_STEP_SUMMARY
+          echo "1. **Missing Secrets**: Ensure AWS_ROLE_ARN, AWS_ACCOUNT_ID, and GITHUB_CONNECTION_ARN are set" >> $GITHUB_STEP_SUMMARY
+          echo "2. **IAM Permissions**: The OIDC role needs CDK, CloudFormation, App Runner, DynamoDB, and IAM permissions" >> $GITHUB_STEP_SUMMARY
+          echo "3. **GitHub Connection**: Verify the App Runner GitHub connection is in 'Available' status" >> $GITHUB_STEP_SUMMARY
+          echo "4. **Bedrock Access**: Request access to Claude 3 Haiku model in AWS Bedrock console" >> $GITHUB_STEP_SUMMARY
