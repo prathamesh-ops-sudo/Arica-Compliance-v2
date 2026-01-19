@@ -243,13 +243,54 @@ For the CDK deployment role, use these minimum permissions:
 - IAM: PassRole and CreateRole for App Runner roles
 - S3: Access to CDK bootstrap bucket
 
+## Phase 4 Features (MVP)
+
+### Authentication (Cognito)
+- AWS Cognito User Pool for user authentication
+- Email-based sign up with verification
+- Password policies (8+ chars, uppercase, lowercase, digits)
+- Custom attributes for organization mapping and roles
+- Frontend auth context with login/signup/logout hooks
+
+### PDF Report Generation
+- Generate compliance reports as PDF documents
+- Cover page with organization details and compliance score
+- Gaps analysis section with severity indicators
+- Remediation recommendations with timelines
+- Step-by-step implementation plan
+- S3 storage with pre-signed download URLs
+- Fallback to direct PDF download if S3 unavailable
+
+### Billing (Stripe Stub)
+- Three pricing tiers: Starter ($99), Professional ($299), Enterprise ($799)
+- Mock subscription endpoint for demo purposes
+- Pricing page with feature comparison
+- Ready for Stripe integration
+
+### Security & Monitoring
+- Helmet.js for security headers (CSP, X-XSS-Protection, etc.)
+- Rate limiting: 100 req/15min global, 10 req/5min for auth, 60 req/min for API
+- SNS topic for CloudWatch alarms
+- X-Powered-By header disabled
+
+### Infrastructure
+- Cognito User Pool and App Client
+- S3 bucket for PDF reports (90-day lifecycle)
+- SNS topic for monitoring alarms
+- IAM permissions for S3 and Cognito
+
 ## Future Enhancements
 
 - [x] Add DynamoDB tables for persistent storage
 - [x] Add AWS Bedrock integration for AI features
+- [x] Add Cognito authentication
+- [x] Add PDF report generation with S3 storage
+- [x] Add billing/pricing stub
+- [x] Add security middleware (helmet, rate limiting)
 - [ ] Add custom domain with Route 53
 - [ ] Add CloudWatch alarms and dashboards
 - [ ] Add WAF for security
+- [ ] Integrate Stripe for real payments
 
 ## Troubleshooting
 
