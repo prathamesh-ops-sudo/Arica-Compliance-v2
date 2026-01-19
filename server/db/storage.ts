@@ -46,11 +46,13 @@ export class MemStorage implements IStorage {
   private seedOrganizations() {
     const seedData: Array<{ name: string; complianceScore: number; lastScanDate: string; status: string }> = [
       { name: "TechNova Solutions", complianceScore: 84, lastScanDate: "2026-01-15", status: "Partial" },
-      { name: "FinSecure Pvt Ltd", complianceScore: 62, lastScanDate: "2026-01-10", status: "Critical Gaps" },
+      { name: "FinSecure Pvt Ltd", complianceScore: 62, lastScanDate: "2026-01-10", status: "Critical" },
       { name: "HealthFirst Corp", complianceScore: 91, lastScanDate: "2026-01-18", status: "Compliant" },
       { name: "RetailMax Inc", complianceScore: 73, lastScanDate: "2026-01-12", status: "Partial" },
-      { name: "CloudSync Systems", complianceScore: 45, lastScanDate: "2026-01-08", status: "Critical Gaps" },
+      { name: "CloudSync Systems", complianceScore: 45, lastScanDate: "2026-01-08", status: "Critical" },
       { name: "DataGuard Solutions", complianceScore: 88, lastScanDate: "2026-01-17", status: "Compliant" },
+      { name: "SecureBank Financial", complianceScore: 95, lastScanDate: "2026-01-19", status: "Compliant" },
+      { name: "MediCare Systems", complianceScore: 78, lastScanDate: "2026-01-14", status: "Partial" },
     ];
 
     seedData.forEach((org) => {
