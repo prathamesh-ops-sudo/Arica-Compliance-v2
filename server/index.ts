@@ -4,6 +4,7 @@ import { config } from './config';
 import { corsMiddleware, errorHandler, requestLogger, log } from './middleware';
 import { registerApiRoutes } from './routes';
 import { serveStatic } from './static';
+import { initializeStorage } from './db';
 
 const app = express();
 const httpServer = createServer(app);
@@ -34,6 +35,8 @@ registerApiRoutes(app);
 app.use(errorHandler);
 
 (async () => {
+  await initializeStorage();
+
   if (config.isProduction) {
     serveStatic(app);
   } else {
