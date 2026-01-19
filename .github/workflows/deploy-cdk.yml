@@ -1,0 +1,82 @@
+name: Deploy CDK Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**'
+      - '.github/workflows/deploy-cdk.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: false
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - production
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  NODE_VERSION: '20'
+
+jobs:
+  deploy:
+    name: Deploy CDK Stack
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-CDK-Deploy
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: infrastructure/package-lock.json
+
+      - name: Install CDK CLI globally
+        run: npm install -g aws-cdk
+
+      - name: Install infrastructure dependencies
+        working-directory: infrastructure
+        run: npm ci
+
+      - name: CDK Bootstrap (idempotent)
+        working-directory: infrastructure
+        run: |
+          cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ env.AWS_REGION }} \
+            --trust ${{ secrets.AWS_ACCOUNT_ID }} \
+            || echo "Bootstrap already done or skipped"
+
+      - name: CDK Deploy
+        working-directory: infrastructure
+        run: |
+          cdk deploy --all \
+            --require-approval never \
+            -c githubConnectionArn=${{ secrets.GITHUB_CONNECTION_ARN }}
+
+      - name: Output Stack URLs
+        working-directory: infrastructure
+        run: |
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Stack outputs:" >> $GITHUB_STEP_SUMMARY
+          aws cloudformation describe-stacks \
+            --stack-name AricaToucanStack \
+            --query 'Stacks[0].Outputs' \
+            --output table >> $GITHUB_STEP_SUMMARY || echo "Could not fetch stack outputs"
