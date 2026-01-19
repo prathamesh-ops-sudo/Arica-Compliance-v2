@@ -210,11 +210,7 @@ export class AricaToucanStack extends cdk.Stack {
     });
 
     // Frontend App Runner Service
-    // Note: For the frontend to know the backend URL, you need to:
-    // 1. Deploy backend first to get its URL
-    // 2. Set VITE_API_URL in the frontend build environment (Vite injects at build time)
-    // 3. Redeploy frontend with the backend URL
-    // Or use a runtime config approach (fetch config from backend/S3)
+    // Note: Vite embeds environment variables at build time, so we pass Cognito IDs here
     const frontendService = new apprunner.Service(this, 'AricaToucanFrontend', {
       serviceName: 'arica-toucan-frontend',
       source: apprunner.Source.fromGitHub({
@@ -226,6 +222,11 @@ export class AricaToucanStack extends cdk.Stack {
           buildCommand: 'npm ci && npm install serve && npm run build',
           startCommand: 'npx serve dist/public -l 8080 -s',
           port: '8080',
+          environmentVariables: {
+            VITE_COGNITO_USER_POOL_ID: userPool.userPoolId,
+            VITE_COGNITO_CLIENT_ID: userPoolClient.userPoolClientId,
+            VITE_API_URL: `https://${backendService.serviceUrl}`,
+          },
         },
         connection: apprunner.GitHubConnection.fromConnectionArn(githubConnectionArn),
       }),
