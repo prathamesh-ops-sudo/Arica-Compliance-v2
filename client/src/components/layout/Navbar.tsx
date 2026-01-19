@@ -73,7 +73,7 @@ export function Navbar() {
               size="icon"
               onClick={toggleTheme}
               aria-label="Toggle dark mode"
-              className="mr-1"
+              className="mr-1 lg:hidden"
               data-testid="button-theme-toggle-mobile"
             >
               {theme === "dark" ? (

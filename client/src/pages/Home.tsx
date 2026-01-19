@@ -30,10 +30,10 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5 py-20 lg:py-32">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+        <div className="absolute inset-0 bg-grid-pattern animate-grid-slow opacity-30" />
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6">
+          <div className="max-w-3xl mx-auto text-center motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-4 motion-safe:duration-700">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6 shadow-md shadow-primary/10">
               <Shield className="h-10 w-10 text-primary" />
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight" data-testid="text-hero-title">
@@ -62,7 +62,7 @@ export default function Home() {
 
       <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-4 motion-safe:duration-600">
             <h2 className="text-3xl font-bold text-foreground mb-4">
               Why Choose Arica Toucan?
             </h2>
@@ -76,7 +76,11 @@ export default function Home() {
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <Card key={index} className="hover-elevate border-border/50">
+                <Card
+                  key={index}
+                  className="hover-elevate border-border/50 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-4 motion-safe:duration-500"
+                  style={{ animationDelay: `${index * 80}ms` }}
+                >
                   <CardHeader>
                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                       <Icon className="h-6 w-6 text-primary" />
@@ -98,7 +102,7 @@ export default function Home() {
       <section className="py-16 lg:py-24 bg-card border-y">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="grid gap-8 md:grid-cols-3 text-center">
+            <div className="grid gap-8 md:grid-cols-3 text-center motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-4 motion-safe:duration-600">
               <div>
                 <div className="text-4xl font-bold text-primary mb-2">500+</div>
                 <p className="text-muted-foreground">Organizations Assessed</p>
@@ -118,7 +122,7 @@ export default function Home() {
 
       <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
+          <div className="max-w-3xl mx-auto text-center motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-4 motion-safe:duration-700">
             <h2 className="text-3xl font-bold text-foreground mb-4">
               Ready to Start Your Compliance Journey?
             </h2>
