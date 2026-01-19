@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Shield, CheckCircle2, BarChart3, FileCheck, Users, ArrowRight, ClipboardList } from "lucide-react";
+import { Shield, CheckCircle2, BarChart3, FileCheck, Users, ArrowRight, ClipboardList, Zap, Download, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -23,6 +23,37 @@ const features = [
     icon: Users,
     title: "Multi-Organization Support",
     description: "Manage compliance across multiple organizations from a single dashboard.",
+  },
+  {
+    icon: Zap,
+    title: "Step-by-Step Plans",
+    description: "Get actionable implementation plans with timelines to achieve compliance faster.",
+  },
+  {
+    icon: Download,
+    title: "PDF Export",
+    description: "Download professional compliance reports to share with auditors and stakeholders.",
+  },
+];
+
+const testimonials = [
+  {
+    quote: "Arica Toucan helped us achieve ISO 27001 certification in half the time we expected. The AI analysis identified gaps we would have missed.",
+    author: "Sarah Chen",
+    role: "CISO",
+    company: "TechStart Inc.",
+  },
+  {
+    quote: "The step-by-step remediation plans made it easy for our team to prioritize and address compliance gaps systematically.",
+    author: "Michael Rodriguez",
+    role: "IT Director",
+    company: "FinanceFlow Ltd.",
+  },
+  {
+    quote: "Finally, a compliance tool that doesn't require a PhD to use. Our team was up and running in minutes.",
+    author: "Emily Watson",
+    role: "Security Manager",
+    company: "CloudSecure Systems",
   },
 ];
 
@@ -72,7 +103,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
@@ -116,6 +147,42 @@ export default function Home() {
                 <p className="text-muted-foreground">Expert Support</p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 lg:py-24">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              What Our Customers Say
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Trusted by security professionals and compliance teams worldwide.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <Card
+                key={index}
+                className="border-border/50 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-4 motion-safe:duration-500"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <CardContent className="pt-6">
+                  <Quote className="h-8 w-8 text-primary/20 mb-4" />
+                  <p className="text-muted-foreground mb-6 italic">
+                    &ldquo;{testimonial.quote}&rdquo;
+                  </p>
+                  <div className="border-t pt-4">
+                    <p className="font-semibold text-foreground">{testimonial.author}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {testimonial.role}, {testimonial.company}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
