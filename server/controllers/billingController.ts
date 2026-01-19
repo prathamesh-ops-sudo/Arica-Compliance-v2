@@ -147,4 +147,50 @@ export const billingController = {
       });
     }
   },
+
+  async webhook(req: Request, res: Response) {
+    try {
+      const event = req.body;
+
+      console.log('Stripe webhook received (mock):', {
+        type: event.type,
+        id: event.id,
+        timestamp: new Date().toISOString(),
+      });
+
+      switch (event.type) {
+        case 'checkout.session.completed':
+          console.log('Checkout session completed:', event.data?.object?.id);
+          break;
+        case 'customer.subscription.created':
+          console.log('Subscription created:', event.data?.object?.id);
+          break;
+        case 'customer.subscription.updated':
+          console.log('Subscription updated:', event.data?.object?.id);
+          break;
+        case 'customer.subscription.deleted':
+          console.log('Subscription deleted:', event.data?.object?.id);
+          break;
+        case 'invoice.paid':
+          console.log('Invoice paid:', event.data?.object?.id);
+          break;
+        case 'invoice.payment_failed':
+          console.log('Invoice payment failed:', event.data?.object?.id);
+          break;
+        default:
+          console.log('Unhandled event type:', event.type);
+      }
+
+      return res.json({
+        received: true,
+        message: 'Webhook processed (mock). Stripe integration coming soon.',
+      });
+    } catch (error) {
+      console.error('Webhook error:', error);
+      return res.status(500).json({
+        error: true,
+        message: 'Webhook processing failed',
+      });
+    }
+  },
 };

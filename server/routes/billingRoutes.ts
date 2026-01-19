@@ -7,5 +7,6 @@ const router = Router();
 router.get('/plans', billingController.getPlans);
 router.post('/subscribe', apiRateLimiter, billingController.subscribe);
 router.post('/cancel/:subscriptionId', apiRateLimiter, billingController.cancelSubscription);
+router.post('/webhook', billingController.webhook);
 
 export default router;

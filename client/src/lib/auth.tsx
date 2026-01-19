@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   CognitoUserPool,
   CognitoUser,
@@ -6,6 +6,7 @@ import {
   CognitoUserAttribute,
   CognitoUserSession,
 } from 'amazon-cognito-identity-js';
+import { setAuthTokenGetter } from './api';
 
 const COGNITO_USER_POOL_ID = import.meta.env.VITE_COGNITO_USER_POOL_ID || '';
 const COGNITO_CLIENT_ID = import.meta.env.VITE_COGNITO_CLIENT_ID || '';
@@ -34,6 +35,7 @@ interface AuthContextType {
   confirmSignup: (email: string, code: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (email: string, code: string, newPassword: string) => Promise<void>;
+  getIdToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -84,6 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    setAuthTokenGetter(getIdToken);
+    
     getCurrentUser()
       .then((currentUser) => {
         setUser(currentUser);
@@ -217,6 +221,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const getIdToken = async (): Promise<string | null> => {
+    if (!userPool) return null;
+
+    return new Promise((resolve) => {
+      const cognitoUser = userPool.getCurrentUser();
+      if (!cognitoUser) {
+        resolve(null);
+        return;
+      }
+
+      cognitoUser.getSession((err: Error | null, session: CognitoUserSession | null) => {
+        if (err || !session || !session.isValid()) {
+          resolve(null);
+          return;
+        }
+        resolve(session.getIdToken().getJwtToken());
+      });
+    });
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
@@ -227,6 +251,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     confirmSignup,
     forgotPassword,
     resetPassword,
+    getIdToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
