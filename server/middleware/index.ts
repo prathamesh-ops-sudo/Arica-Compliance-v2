@@ -8,3 +8,5 @@ export {
   apiRateLimiter,
   applySecurityMiddleware 
 } from './security';
+export { authMiddleware, optionalAuthMiddleware } from './auth';
+export type { AuthenticatedRequest } from './auth';

@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { fetchWithAuth } from "@/lib/api";
 import type { Organization } from "@shared/schema";
 
 interface AnalysisResult {
@@ -42,7 +43,7 @@ export default function AdminDashboard() {
 
   const analyzeMutation = useMutation({
     mutationFn: async (orgId: string) => {
-      const response = await fetch(`/api/analyze/${orgId}`, {
+      const response = await fetchWithAuth(`/api/analyze/${orgId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -60,7 +61,7 @@ export default function AdminDashboard() {
 
   const pdfMutation = useMutation({
     mutationFn: async (orgId: string) => {
-      const response = await fetch(`/api/report/pdf/${orgId}`);
+      const response = await fetchWithAuth(`/api/report/pdf/${orgId}`);
       if (!response.ok) {
         const contentType = response.headers.get('content-type');
         if (contentType?.includes('application/json')) {
