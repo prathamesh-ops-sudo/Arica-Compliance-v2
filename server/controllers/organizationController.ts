@@ -99,4 +99,43 @@ export const organizationController = {
       res.status(500).json({ error: true, message: 'Failed to create organization' });
     }
   },
+
+  async exportData(req: AuthenticatedRequest, res: Response) {
+    try {
+      const id = req.params.id as string;
+      const userOrgId = req.user?.organizationId;
+      
+      if (userOrgId && userOrgId !== id && req.user?.role !== 'admin') {
+        return res.status(403).json({ error: true, message: 'Access denied to this organization' });
+      }
+      
+      const organization = await organizationService.getOrganizationById(id);
+      if (!organization) {
+        return res.status(404).json({ error: true, message: 'Organization not found' });
+      }
+
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        exportedBy: req.user?.email,
+        organization: {
+          id: organization.id,
+          name: organization.name,
+          complianceScore: organization.complianceScore,
+          status: organization.status,
+          lastScanDate: organization.lastScanDate,
+        },
+        metadata: {
+          version: '1.0',
+          format: 'JSON',
+        },
+      };
+
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="org-${id}-export-${Date.now()}.json"`);
+      res.json(exportData);
+    } catch (error) {
+      console.error('Export data error:', error);
+      res.status(500).json({ error: true, message: 'Failed to export organization data' });
+    }
+  },
 };

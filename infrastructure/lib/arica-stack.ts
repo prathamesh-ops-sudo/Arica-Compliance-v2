@@ -7,10 +7,13 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as cloudwatchActions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as sns from 'aws-cdk-lib/aws-sns';
+import * as route53 from 'aws-cdk-lib/aws-route53';
 import { Construct } from 'constructs';
 
 export interface AricaToucanStackProps extends cdk.StackProps {
   githubConnectionArn: string;
+  customDomainName?: string;
+  hostedZoneId?: string;
 }
 
 export class AricaToucanStack extends cdk.Stack {
@@ -46,8 +49,20 @@ export class AricaToucanStack extends cdk.Stack {
       pointInTimeRecovery: true,
     });
 
+    // DynamoDB Table for Analytics/Usage Tracking
+    const analyticsTable = new dynamodb.Table(this, 'AricaAnalyticsTable', {
+      tableName: 'AricaAnalytics',
+      partitionKey: { name: 'orgId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'timestamp', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      pointInTimeRecovery: true,
+      timeToLiveAttribute: 'ttl',
+    });
+
     // Grant DynamoDB read/write permissions to App Runner instance role
     organizationsTable.grantReadWriteData(appRunnerInstanceRole);
+    analyticsTable.grantReadWriteData(appRunnerInstanceRole);
 
     // Grant Bedrock InvokeModel permission to App Runner instance role
     appRunnerInstanceRole.addToPolicy(new iam.PolicyStatement({
@@ -171,6 +186,7 @@ export class AricaToucanStack extends cdk.Stack {
           port: '8080',
           environmentVariables: {
             DYNAMODB_TABLE_NAME: organizationsTable.tableName,
+            DYNAMODB_ANALYTICS_TABLE: analyticsTable.tableName,
             AWS_REGION: this.region,
             COGNITO_USER_POOL_ID: userPool.userPoolId,
             COGNITO_CLIENT_ID: userPoolClient.userPoolClientId,
@@ -275,6 +291,50 @@ export class AricaToucanStack extends cdk.Stack {
       description: 'SNS Topic ARN for CloudWatch Alarms',
       exportName: 'AricaToucanAlarmTopicArn',
     });
+
+    new cdk.CfnOutput(this, 'AnalyticsTableName', {
+      value: analyticsTable.tableName,
+      description: 'DynamoDB Analytics Table Name',
+      exportName: 'AricaToucanAnalyticsTable',
+    });
+
+    // Custom Domain Placeholder (uncomment and configure when ready)
+    // To use a custom domain:
+    // 1. Register a domain in Route 53 or transfer an existing domain
+    // 2. Create a hosted zone for your domain
+    // 3. Pass customDomainName and hostedZoneId to this stack
+    // 4. Uncomment the code below
+    //
+    // if (props.customDomainName && props.hostedZoneId) {
+    //   const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+    //     hostedZoneId: props.hostedZoneId,
+    //     zoneName: props.customDomainName,
+    //   });
+    //
+    //   // Create CNAME record for frontend (e.g., app.yourdomain.com)
+    //   new route53.CnameRecord(this, 'FrontendCname', {
+    //     zone: hostedZone,
+    //     recordName: 'app',
+    //     domainName: frontendService.serviceUrl,
+    //   });
+    //
+    //   // Create CNAME record for backend API (e.g., api.yourdomain.com)
+    //   new route53.CnameRecord(this, 'BackendCname', {
+    //     zone: hostedZone,
+    //     recordName: 'api',
+    //     domainName: backendService.serviceUrl,
+    //   });
+    //
+    //   new cdk.CfnOutput(this, 'CustomFrontendUrl', {
+    //     value: `https://app.${props.customDomainName}`,
+    //     description: 'Custom Frontend URL',
+    //   });
+    //
+    //   new cdk.CfnOutput(this, 'CustomBackendUrl', {
+    //     value: `https://api.${props.customDomainName}`,
+    //     description: 'Custom Backend API URL',
+    //   });
+    // }
 
     // Tags for all resources
     cdk.Tags.of(this).add('Project', 'AricaToucan');

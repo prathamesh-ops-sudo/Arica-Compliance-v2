@@ -1,6 +1,7 @@
-import { type Request, type Response } from 'express';
+import { type Response } from 'express';
 import { storage } from '../db';
-import { generateComplianceReport, uploadAndGetPresignedUrl } from '../services';
+import { generateComplianceReport, uploadAndGetPresignedUrl, analyticsService } from '../services';
+import type { AuthenticatedRequest } from '../middleware';
 
 interface AnalysisResult {
   overallScore: number;
@@ -17,7 +18,7 @@ interface AnalysisResult {
 }
 
 export const pdfController = {
-  async generatePdfReport(req: Request, res: Response) {
+  async generatePdfReport(req: AuthenticatedRequest, res: Response) {
     try {
       const orgId = req.params.orgId as string;
 
@@ -36,6 +37,13 @@ export const pdfController = {
       const pdfBuffer = Buffer.from(pdfBytes);
 
       const filename = `compliance-report-${orgId}-${Date.now()}.pdf`;
+
+      await analyticsService.trackEvent({
+        orgId,
+        eventType: 'pdf_generated',
+        userId: req.user?.sub,
+        metadata: { filename },
+      });
 
       try {
         const { downloadUrl } = await uploadAndGetPresignedUrl(orgId, pdfBuffer, filename);

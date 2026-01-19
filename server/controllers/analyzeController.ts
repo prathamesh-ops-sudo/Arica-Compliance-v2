@@ -1,8 +1,9 @@
 import type { Request, Response } from 'express';
-import { bedrockService } from '../services';
+import { bedrockService, analyticsService } from '../services';
+import type { AuthenticatedRequest } from '../middleware';
 
 export const analyzeController = {
-  async analyzeOrganization(req: Request, res: Response): Promise<void> {
+  async analyzeOrganization(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const orgId = req.params.orgId as string;
       const forceRefresh = req.query.refresh === 'true';
@@ -27,6 +28,13 @@ export const analyzeController = {
         res.status(404).json({ error: true, message: 'Organization not found' });
         return;
       }
+
+      await analyticsService.trackEvent({
+        orgId,
+        eventType: 'analysis_run',
+        userId: req.user?.sub,
+        metadata: { forceRefresh },
+      });
 
       res.json({ success: true, data: result, cached: false });
     } catch (error) {
