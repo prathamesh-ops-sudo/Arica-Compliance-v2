@@ -24,21 +24,90 @@ Both services are configured for:
 
 ## How to Deploy Infrastructure
 
-### Step 1: Create GitHub Connection in AWS Console
+There are two ways to deploy: **GitHub Actions (recommended)** or **local deployment**.
+
+---
+
+### Option A: Deploy via GitHub Actions (Recommended)
+
+Deploy infrastructure automatically from GitHub without needing local AWS credentials.
+
+#### Step 1: Create IAM Role with OIDC Trust for GitHub
+
+1. Go to AWS Console > IAM > Identity providers
+2. Add provider: OpenID Connect
+   - Provider URL: `https://token.actions.githubusercontent.com`
+   - Audience: `sts.amazonaws.com`
+3. Create IAM Role with trust policy for GitHub Actions:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::YOUR_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": "repo:prathamesh-ops-sudo/Arica-Compliance-v2:*"
+        }
+      }
+    }
+  ]
+}
+```
+
+4. Attach policies to the role: `AdministratorAccess` (or scoped CDK/CloudFormation/AppRunner permissions)
+
+#### Step 2: Create App Runner GitHub Connection
 
 1. Go to AWS Console > App Runner > GitHub connections
 2. Click "Add new" and follow the OAuth flow to connect your GitHub account
 3. Authorize access to the `prathamesh-ops-sudo/Arica-Compliance-v2` repository
 4. Copy the **Connection ARN** (format: `arn:aws:apprunner:REGION:ACCOUNT:connection/NAME/ID`)
 
-### Step 2: Install Dependencies
+#### Step 3: Add GitHub Secrets
+
+Go to GitHub repo > Settings > Secrets and variables > Actions, and add:
+
+| Secret Name | Value |
+|-------------|-------|
+| `AWS_ROLE_ARN` | ARN of the IAM role created in Step 1 |
+| `AWS_ACCOUNT_ID` | Your AWS account ID (12-digit number) |
+| `GITHUB_CONNECTION_ARN` | App Runner GitHub connection ARN from Step 2 |
+
+#### Step 4: Deploy
+
+- **Automatic**: Push any changes to `infrastructure/` folder on `main` branch
+- **Manual**: Go to Actions tab > "Deploy CDK Infrastructure" > "Run workflow"
+
+The workflow will bootstrap CDK (if needed) and deploy the stack. Check the workflow run summary for the deployed service URLs.
+
+---
+
+### Option B: Deploy Locally
+
+#### Step 1: Create GitHub Connection in AWS Console
+
+1. Go to AWS Console > App Runner > GitHub connections
+2. Click "Add new" and follow the OAuth flow to connect your GitHub account
+3. Authorize access to the `prathamesh-ops-sudo/Arica-Compliance-v2` repository
+4. Copy the **Connection ARN** (format: `arn:aws:apprunner:REGION:ACCOUNT:connection/NAME/ID`)
+
+#### Step 2: Install Dependencies
 
 ```bash
 cd infrastructure
 npm ci
 ```
 
-### Step 3: Bootstrap CDK (First Time Only)
+#### Step 3: Bootstrap CDK (First Time Only)
 
 If this is your first time using CDK in this AWS account/region:
 
@@ -46,7 +115,7 @@ If this is your first time using CDK in this AWS account/region:
 cdk bootstrap
 ```
 
-### Step 4: Deploy the Stack
+#### Step 4: Deploy the Stack
 
 Deploy with the GitHub connection ARN:
 
@@ -59,7 +128,7 @@ export GITHUB_CONNECTION_ARN=arn:aws:apprunner:us-east-1:123456789012:connection
 cdk deploy
 ```
 
-### Step 5: Verify Deployment
+#### Step 5: Verify Deployment
 
 After deployment completes, CDK will output the service URLs:
 
