@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as apprunner from '@aws-cdk/aws-apprunner-alpha';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 
 export interface AricaToucanStackProps extends cdk.StackProps {
@@ -31,11 +32,24 @@ export class AricaToucanStack extends cdk.Stack {
       description: 'Role for App Runner service instances at runtime',
     });
 
-    // Future: Add DynamoDB, Bedrock permissions here
-    // appRunnerInstanceRole.addToPolicy(new iam.PolicyStatement({
-    //   actions: ['dynamodb:*'],
-    //   resources: ['*'],
-    // }));
+    // DynamoDB Table for Organizations
+    const organizationsTable = new dynamodb.Table(this, 'AricaOrganizationsTable', {
+      tableName: 'AricaOrganizations',
+      partitionKey: { name: 'orgId', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      pointInTimeRecovery: true,
+    });
+
+    // Grant DynamoDB read/write permissions to App Runner instance role
+    organizationsTable.grantReadWriteData(appRunnerInstanceRole);
+
+    // Grant Bedrock InvokeModel permission to App Runner instance role
+    appRunnerInstanceRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
+      resources: ['arn:aws:bedrock:*::foundation-model/anthropic.claude-3-haiku-20240307-v1:0'],
+    }));
 
     // Backend App Runner Service
     const backendService = new apprunner.Service(this, 'AricaToucanBackend', {
@@ -49,6 +63,10 @@ export class AricaToucanStack extends cdk.Stack {
           buildCommand: 'npm ci && npm run build',
           startCommand: 'npm run start',
           port: '8080',
+          environmentVariables: {
+            DYNAMODB_TABLE_NAME: organizationsTable.tableName,
+            AWS_REGION: this.region,
+          },
         },
         connection: apprunner.GitHubConnection.fromConnectionArn(githubConnectionArn),
       }),
@@ -111,6 +129,12 @@ export class AricaToucanStack extends cdk.Stack {
       value: `https://${frontendService.serviceUrl}`,
       description: 'Arica Toucan Frontend URL',
       exportName: 'AricaToucanFrontendUrl',
+    });
+
+    new cdk.CfnOutput(this, 'DynamoDBTableName', {
+      value: organizationsTable.tableName,
+      description: 'DynamoDB Organizations Table Name',
+      exportName: 'AricaToucanDynamoDBTable',
     });
 
     // Tags for all resources
