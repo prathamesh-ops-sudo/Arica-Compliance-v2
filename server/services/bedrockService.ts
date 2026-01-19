@@ -1,4 +1,4 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { BedrockRuntimeClient, InvokeModelCommand, AccessDeniedException, ValidationException, ThrottlingException, ServiceQuotaExceededException } from '@aws-sdk/client-bedrock-runtime';
 import { storage } from '../db';
 import type { DynamoDBOrganization } from '../db';
 
@@ -6,6 +6,36 @@ const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
 const MODEL_ID = 'anthropic.claude-3-haiku-20240307-v1:0';
 
 const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
+
+function createFallbackAnalysis(org: OrganizationWithAnalysis, errorMessage: string): AnalysisResult {
+  return {
+    overallScore: org.complianceScore,
+    gaps: [
+      {
+        control: 'AI Analysis Unavailable',
+        description: `AI analysis could not be completed: ${errorMessage}. Please ensure Bedrock model access is enabled in your AWS account.`,
+        severity: 'Medium' as const,
+      },
+    ],
+    remedies: [
+      {
+        action: 'Enable Bedrock Model Access',
+        timeline: 'Immediate - Go to AWS Bedrock console and request access to Claude 3 Haiku model',
+      },
+      {
+        action: 'Retry Analysis',
+        timeline: 'After model access is granted, retry the AI analysis',
+      },
+    ],
+    stepByStepPlan: [
+      'Go to AWS Console > Amazon Bedrock > Model access',
+      'Request access to Anthropic Claude 3 Haiku model',
+      'Wait for access approval (usually instant for most models)',
+      'Return to this dashboard and click "AI Analysis" again',
+    ],
+    analyzedAt: new Date().toISOString(),
+  };
+}
 
 export interface AnalysisResult {
   overallScore: number;
@@ -107,6 +137,43 @@ Ensure the response is valid JSON only, with no markdown formatting or additiona
       return analysisResult;
     } catch (error) {
       console.error('Error invoking Bedrock:', error);
+      
+      let errorMessage = 'Unknown error occurred';
+      let useFallback = false;
+      
+      if (error instanceof AccessDeniedException) {
+        errorMessage = 'Access denied to Bedrock model. Please enable model access in AWS Console.';
+        useFallback = true;
+      } else if (error instanceof ValidationException) {
+        errorMessage = 'Invalid request to Bedrock. Please check model configuration.';
+        useFallback = true;
+      } else if (error instanceof ThrottlingException) {
+        errorMessage = 'Bedrock rate limit exceeded. Please try again later.';
+        useFallback = true;
+      } else if (error instanceof ServiceQuotaExceededException) {
+        errorMessage = 'Bedrock service quota exceeded. Please request a quota increase.';
+        useFallback = true;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+        if (error.message.includes('Could not resolve the foundation model') || 
+            error.message.includes('AccessDenied') ||
+            error.message.includes('not authorized')) {
+          useFallback = true;
+        }
+      }
+      
+      if (useFallback) {
+        console.log('Using fallback analysis due to Bedrock error');
+        const fallbackResult = createFallbackAnalysis(org, errorMessage);
+        
+        const dynamoStorage = storage as { updateOrganization: (id: string, updates: { analysisResult: AnalysisResult }) => Promise<unknown> };
+        await dynamoStorage.updateOrganization(orgId, {
+          analysisResult: fallbackResult,
+        });
+        
+        return fallbackResult;
+      }
+      
       throw error;
     }
   },
