@@ -67,6 +67,11 @@ export class AricaToucanStack extends cdk.Stack {
     });
 
     // Frontend App Runner Service
+    // Note: For the frontend to know the backend URL, you need to:
+    // 1. Deploy backend first to get its URL
+    // 2. Set VITE_API_URL in the frontend build environment (Vite injects at build time)
+    // 3. Redeploy frontend with the backend URL
+    // Or use a runtime config approach (fetch config from backend/S3)
     const frontendService = new apprunner.Service(this, 'AricaToucanFrontend', {
       serviceName: 'arica-toucan-frontend',
       source: apprunner.Source.fromGitHub({
@@ -75,8 +80,8 @@ export class AricaToucanStack extends cdk.Stack {
         configurationSource: apprunner.ConfigurationSourceType.API,
         codeConfigurationValues: {
           runtime: apprunner.Runtime.NODEJS_18,
-          buildCommand: 'npm ci && npm run build',
-          startCommand: 'npx serve dist/public -l 8080',
+          buildCommand: 'npm ci && npm install serve && npm run build',
+          startCommand: 'npx serve dist/public -l 8080 -s',
           port: '8080',
         },
         connection: apprunner.GitHubConnection.fromConnectionArn(githubConnectionArn),
@@ -86,7 +91,7 @@ export class AricaToucanStack extends cdk.Stack {
       instanceRole: appRunnerInstanceRole,
       accessRole: appRunnerAccessRole,
       healthCheck: apprunner.HealthCheck.http({
-        path: '/health',
+        path: '/index.html',
         interval: cdk.Duration.seconds(10),
         timeout: cdk.Duration.seconds(5),
         healthyThreshold: 1,
@@ -94,10 +99,6 @@ export class AricaToucanStack extends cdk.Stack {
       }),
       autoDeploymentsEnabled: true,
     });
-
-    // Add environment variable for frontend to know backend URL
-    // This creates a dependency - frontend deploys after backend
-    frontendService.addEnvironmentVariable('VITE_API_URL', backendService.serviceUrl);
 
     // Stack Outputs
     this.backendUrl = new cdk.CfnOutput(this, 'BackendServiceUrl', {
