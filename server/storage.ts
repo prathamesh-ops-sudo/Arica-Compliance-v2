@@ -44,7 +44,7 @@ export class MemStorage implements IStorage {
   }
 
   private seedOrganizations() {
-    const seedData: InsertOrganization[] = [
+    const seedData: Array<{ name: string; complianceScore: number; lastScanDate: string; status: string }> = [
       { name: "TechNova Solutions", complianceScore: 84, lastScanDate: "2026-01-15", status: "Partial" },
       { name: "FinSecure Pvt Ltd", complianceScore: 62, lastScanDate: "2026-01-10", status: "Critical Gaps" },
       { name: "HealthFirst Corp", complianceScore: 91, lastScanDate: "2026-01-18", status: "Compliant" },
@@ -55,7 +55,8 @@ export class MemStorage implements IStorage {
 
     seedData.forEach((org) => {
       const id = randomUUID();
-      this.organizations.set(id, { id, ...org });
+      const organization: Organization = { id, ...org };
+      this.organizations.set(id, organization);
     });
   }
 
