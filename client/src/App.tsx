@@ -16,6 +16,7 @@ import UserQuestionnaire from "@/pages/UserQuestionnaire";
 import ProviderQuestionnaire from "@/pages/ProviderQuestionnaire";
 import ReportPreview from "@/pages/ReportPreview";
 import AdminDashboard from "@/pages/AdminDashboard";
+import IncomingReports from "@/pages/IncomingReports";
 import Pricing from "@/pages/Pricing";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
@@ -54,6 +55,9 @@ function Router() {
       </Route>
       <Route path="/admin/dashboard">
         {() => <ProtectedRoute component={AdminDashboard} />}
+      </Route>
+      <Route path="/admin/reports">
+        {() => <ProtectedRoute component={IncomingReports} />}
       </Route>
       <Route component={NotFound} />
     </Switch>

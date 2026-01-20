@@ -1,0 +1,82 @@
+[
+    {
+        "id": "q1",
+        "text": "Has the organization identified internal and external issues relevant to information security?",
+        "options": [
+            "Yes",
+            "No",
+            "Partial",
+            "Not Applicable"
+        ]
+    },
+    {
+        "id": "q4",
+        "text": "Is there a documented information security policy that is communicated within the organization?",
+        "options": [
+            "Yes",
+            "No",
+            "Partial",
+            "Not Applicable"
+        ]
+    },
+    {
+        "id": "q6",
+        "text": "Is there a formal, documented information security risk assessment methodology in place?",
+        "options": [
+            "Yes",
+            "No",
+            "Partial",
+            "Not Applicable"
+        ]
+    },
+    {
+        "id": "q12",
+        "text": "Do employees and contractors receive regular information security awareness and training?",
+        "options": [
+            "Yes",
+            "No",
+            "Partial",
+            "Not Applicable"
+        ]
+    },
+    {
+        "id": "q22",
+        "text": "Is strong authentication (e.g. MFA) enforced for access to critical systems and remote access?",
+        "options": [
+            "Yes",
+            "No",
+            "Partial",
+            "Not Applicable"
+        ]
+    },
+    {
+        "id": "q25",
+        "text": "Is sensitive data encrypted at rest in databases, storage systems, and backup media where appropriate?",
+        "options": [
+            "Yes",
+            "No",
+            "Partial",
+            "Not Applicable"
+        ]
+    },
+    {
+        "id": "q31",
+        "text": "Is anti-malware protection deployed on relevant endpoints and servers, with regular updates and scans?",
+        "options": [
+            "Yes",
+            "No",
+            "Partial",
+            "Not Applicable"
+        ]
+    },
+    {
+        "id": "q34",
+        "text": "Are networks segmented to separate critical environments?",
+        "options": [
+            "Yes",
+            "No",
+            "Partial",
+            "Not Applicable"
+        ]
+    }
+]

@@ -85,7 +85,7 @@ export default function AdminDashboard() {
         }
         throw new Error('Failed to generate PDF report');
       }
-      
+
       const contentType = response.headers.get('content-type');
       if (contentType?.includes('application/pdf')) {
         const blob = await response.blob();
@@ -99,7 +99,7 @@ export default function AdminDashboard() {
         document.body.removeChild(a);
         return { success: true, direct: true };
       }
-      
+
       const data = await response.json();
       if (data.downloadUrl) {
         window.open(data.downloadUrl, '_blank');
@@ -190,6 +190,14 @@ export default function AdminDashboard() {
             >
               <Plus className="h-4 w-4" />
               New Assessment
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => setLocation("/admin/reports")}
+              className="gap-2 bg-blue-600 hover:bg-blue-700"
+            >
+              <FileDown className="h-4 w-4" />
+              Incoming Reports
             </Button>
             <Button
               variant="outline"
@@ -288,9 +296,9 @@ export default function AdminDashboard() {
                       </TableRow>
                     ) : (
                       filteredOrgs.map((org, index) => (
-                        <TableRow 
-                          key={org.id} 
-                          className="hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 transition-all duration-200 border-b motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-left-4 motion-safe:duration-300" 
+                        <TableRow
+                          key={org.id}
+                          className="hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 transition-all duration-200 border-b motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-left-4 motion-safe:duration-300"
                           style={{ animationDelay: `${index * 50}ms` }}
                           data-testid={`row-org-${org.id}`}
                         >
@@ -306,11 +314,10 @@ export default function AdminDashboard() {
                             <div className="flex items-center gap-3">
                               <div className="w-20 h-3 rounded-full bg-muted overflow-hidden shadow-inner">
                                 <div
-                                  className={`h-full rounded-full transition-all duration-500 ${
-                                    org.complianceScore >= 80 ? "bg-gradient-to-r from-green-500 to-green-600" :
-                                    org.complianceScore >= 60 ? "bg-gradient-to-r from-amber-500 to-amber-600" : 
-                                    "bg-gradient-to-r from-red-500 to-red-600"
-                                  }`}
+                                  className={`h-full rounded-full transition-all duration-500 ${org.complianceScore >= 80 ? "bg-gradient-to-r from-green-500 to-green-600" :
+                                      org.complianceScore >= 60 ? "bg-gradient-to-r from-amber-500 to-amber-600" :
+                                        "bg-gradient-to-r from-red-500 to-red-600"
+                                    }`}
                                   style={{ width: `${org.complianceScore}%` }}
                                 />
                               </div>
@@ -323,13 +330,12 @@ export default function AdminDashboard() {
                           <TableCell>
                             <Badge
                               variant="secondary"
-                              className={`font-semibold px-3 py-1 ${
-                                org.status === "Compliant"
+                              className={`font-semibold px-3 py-1 ${org.status === "Compliant"
                                   ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200"
                                   : org.status === "Partial"
-                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200"
-                                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200"
-                              }`}
+                                    ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200"
+                                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200"
+                                }`}
                             >
                               {org.status}
                             </Badge>
@@ -425,8 +431,8 @@ export default function AdminDashboard() {
                 <p className="text-muted-foreground mb-4">
                   {analyzeMutation.error instanceof Error ? analyzeMutation.error.message : 'An error occurred'}
                 </p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => selectedOrg && analyzeMutation.mutate(selectedOrg.id)}
                   className="gap-2"
                 >
@@ -470,13 +476,12 @@ export default function AdminDashboard() {
                             </div>
                             <Badge
                               variant="secondary"
-                              className={`font-semibold ${
-                                gap.severity === 'High'
+                              className={`font-semibold ${gap.severity === 'High'
                                   ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                   : gap.severity === 'Medium'
-                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                                  : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                              }`}
+                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                }`}
                             >
                               {gap.severity}
                             </Badge>

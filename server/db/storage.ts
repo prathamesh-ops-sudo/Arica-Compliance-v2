@@ -7,6 +7,8 @@ import {
   type InsertUserQuestionnaire,
   type ProviderQuestionnaireResponse,
   type InsertProviderQuestionnaire,
+  type Report,
+  type InsertReport,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -26,6 +28,10 @@ export interface IStorage {
 
   getProviderQuestionnaireResponses(): Promise<ProviderQuestionnaireResponse[]>;
   createProviderQuestionnaireResponse(response: InsertProviderQuestionnaire): Promise<ProviderQuestionnaireResponse>;
+
+  createReport(report: InsertReport): Promise<Report>;
+  getUnassignedReports(): Promise<Report[]>;
+  assignReportToOrganization(reportId: string, organizationId: string): Promise<Report | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -33,12 +39,14 @@ export class MemStorage implements IStorage {
   private organizations: Map<string, Organization>;
   private userQuestionnaireResponses: Map<string, UserQuestionnaireResponse>;
   private providerQuestionnaireResponses: Map<string, ProviderQuestionnaireResponse>;
+  private reports: Map<string, Report>;
 
   constructor() {
     this.users = new Map();
     this.organizations = new Map();
     this.userQuestionnaireResponses = new Map();
     this.providerQuestionnaireResponses = new Map();
+    this.reports = new Map();
 
     this.seedOrganizations();
   }
@@ -135,6 +143,34 @@ export class MemStorage implements IStorage {
     this.providerQuestionnaireResponses.set(id, questionnaireResponse);
     return questionnaireResponse;
   }
+
+  async createReport(report: InsertReport): Promise<Report> {
+    const id = randomUUID();
+    const newReport: Report = {
+      id,
+      ...report,
+      questionnaireData: report.questionnaireData ?? null,
+      organizationId: report.organizationId ?? null,
+      createdAt: new Date(),
+      status: report.status ?? 'pending'
+    };
+    this.reports.set(id, newReport);
+    return newReport;
+  }
+
+  async getUnassignedReports(): Promise<Report[]> {
+    return Array.from(this.reports.values()).filter(r => r.status === 'pending');
+  }
+
+  async assignReportToOrganization(reportId: string, organizationId: string): Promise<Report | undefined> {
+    const report = this.reports.get(reportId);
+    if (!report) return undefined;
+
+    const updatedReport = { ...report, organizationId, status: 'assigned' };
+    this.reports.set(reportId, updatedReport);
+    return updatedReport;
+  }
 }
 
 export const storage = new MemStorage();
+

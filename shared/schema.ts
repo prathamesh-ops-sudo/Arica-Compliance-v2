@@ -479,3 +479,27 @@ export const providerQuestions: Question[] = [
     options: ["Yes", "No", "In Progress"],
   },
 ];
+
+export const reports = pgTable("reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  hostname: text("hostname").notNull(),
+  userType: text("user_type").notNull(), // 'admin' | 'employee'
+  scanData: text("scan_data").notNull(), // JSON string
+  questionnaireData: text("questionnaire_data"), // JSON string, nullable
+  status: text("status").notNull().default("pending"), // 'pending', 'assigned'
+  organizationId: varchar("organization_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertReportSchema = createInsertSchema(reports).pick({
+  hostname: true,
+  userType: true,
+  scanData: true,
+  questionnaireData: true,
+  status: true,
+  organizationId: true,
+});
+
+export type InsertReport = z.infer<typeof insertReportSchema>;
+export type Report = typeof reports.$inferSelect;
+

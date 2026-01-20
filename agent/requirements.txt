@@ -1,0 +1,6 @@
+requests
+WMI
+pywin32
+psutil
+customtkinter
+packaging
