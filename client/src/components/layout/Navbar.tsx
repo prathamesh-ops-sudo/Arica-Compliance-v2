@@ -39,18 +39,20 @@ export function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+    <nav className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur-xl supports-[backdrop-filter]:bg-card/80 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 hover-elevate rounded-md px-2 py-1.5">
-            <Shield className="h-7 w-7 text-primary" />
+          <Link href="/" className="flex items-center gap-3 hover:scale-105 transition-transform duration-200 rounded-lg px-3 py-2 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10">
+            <div className="w-8 h-8 rounded-lg bg-gradient-cyber flex items-center justify-center shadow-lg">
+              <Shield className="h-5 w-5 text-white" />
+            </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg leading-tight text-foreground" data-testid="text-brand">Arica Toucan</span>
-              <span className="text-xs text-muted-foreground leading-tight hidden sm:block">ISO 27001/27002 Compliance</span>
+              <span className="font-bold text-lg leading-tight text-gradient" data-testid="text-brand">Arica Toucan</span>
+              <span className="text-xs text-muted-foreground leading-tight hidden sm:block font-medium">ISO 27001/27002 Compliance</span>
             </div>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = location === link.href;
@@ -60,8 +62,8 @@ export function Navbar() {
                     variant={isActive ? "secondary" : "ghost"}
                     size="sm"
                     className={cn(
-                      "gap-2",
-                      isActive && "bg-primary/10 text-primary"
+                      "gap-2 font-medium transition-all duration-200",
+                      isActive && "bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-primary/20"
                     )}
                     data-testid={`nav-${link.href.replace(/\//g, '-').slice(1)}`}
                   >
@@ -72,11 +74,14 @@ export function Navbar() {
               );
             })}
 
+            <div className="w-px h-6 bg-border mx-2" />
+
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
               aria-label="Toggle dark mode"
+              className="rounded-lg hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10"
               data-testid="button-theme-toggle"
             >
               {theme === "dark" ? (
@@ -89,7 +94,7 @@ export function Navbar() {
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
+                  <Button variant="outline" size="sm" className="gap-2 ml-2 font-medium">
                     <User className="h-4 w-4" />
                     <span className="hidden xl:inline max-w-[120px] truncate">
                       {user?.name || user?.email?.split('@')[0] || 'User'}
@@ -99,7 +104,7 @@ export function Navbar() {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>
                     <div className="flex flex-col">
-                      <span className="font-medium">{user?.name || 'User'}</span>
+                      <span className="font-semibold">{user?.name || 'User'}</span>
                       <span className="text-xs text-muted-foreground">{user?.email}</span>
                     </div>
                   </DropdownMenuLabel>
@@ -112,7 +117,7 @@ export function Navbar() {
               </DropdownMenu>
             ) : (
               <Link href="/login">
-                <Button variant="default" size="sm" className="gap-2">
+                <Button variant="gradient" size="sm" className="gap-2 ml-2">
                   <LogIn className="h-4 w-4" />
                   <span className="hidden xl:inline">Sign In</span>
                 </Button>
@@ -126,7 +131,7 @@ export function Navbar() {
               size="icon"
               onClick={toggleTheme}
               aria-label="Toggle dark mode"
-              className="mr-1 lg:hidden"
+              className="mr-1 lg:hidden rounded-lg"
               data-testid="button-theme-toggle-mobile"
             >
               {theme === "dark" ? (
@@ -139,7 +144,7 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className="lg:hidden rounded-lg"
               onClick={() => setIsOpen(!isOpen)}
               data-testid="button-mobile-menu"
             >
@@ -149,8 +154,8 @@ export function Navbar() {
         </div>
 
         {isOpen && (
-          <div className="lg:hidden pb-4 border-t pt-4">
-            <div className="flex flex-col gap-1">
+          <div className="lg:hidden pb-4 border-t pt-4 bg-gradient-subtle rounded-b-lg">
+            <div className="flex flex-col gap-2">
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 const isActive = location === link.href;
@@ -159,8 +164,8 @@ export function Navbar() {
                     <Button
                       variant={isActive ? "secondary" : "ghost"}
                       className={cn(
-                        "w-full justify-start gap-3",
-                        isActive && "bg-primary/10 text-primary"
+                        "w-full justify-start gap-3 font-medium",
+                        isActive && "bg-gradient-to-r from-primary/10 to-accent/10 text-primary"
                       )}
                       data-testid={`mobile-nav-${link.href.replace(/\//g, '-').slice(1)}`}
                     >
@@ -173,12 +178,12 @@ export function Navbar() {
               
               {isAuthenticated ? (
                 <>
-                  <div className="px-3 py-2 text-sm text-muted-foreground border-t mt-2 pt-2">
+                  <div className="px-3 py-2 text-sm text-muted-foreground border-t mt-2 pt-4 font-medium">
                     Signed in as {user?.email}
                   </div>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start gap-3 text-red-600"
+                    className="w-full justify-start gap-3 text-red-600 font-medium"
                     onClick={() => {
                       handleLogout();
                       setIsOpen(false);
@@ -190,7 +195,7 @@ export function Navbar() {
                 </>
               ) : (
                 <Link href="/login" onClick={() => setIsOpen(false)}>
-                  <Button variant="default" className="w-full justify-start gap-3 mt-2">
+                  <Button variant="gradient" className="w-full justify-start gap-3 mt-2">
                     <LogIn className="h-4 w-4" />
                     Sign In
                   </Button>
